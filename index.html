@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Games</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Browser Mini Games</h1>
+
+<!-- Login -->
+<div id="login-section" class="form-container">
+<h2>Login</h2>
+<form id="loginForm">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <button type="submit" class="btn">Login</button>
+</form>
+<p>Don't have an account? <a href="#" id="showRegister">Register</a></p>
+</div>
+
+<!-- Register -->
+<div id="register-section" class="form-container" style="display:none;">
+<h2>Register</h2>
+<form id="registerForm">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <button type="submit" class="btn">Register</button>
+</form>
+<p>Already have an account? <a href="#" id="showLogin">Login</a></p>
+</div>
+
+<!-- Game Menu -->
+<div id="game-menu" class="form-container" style="display:none;">
+<h2>Welcome, <span id="userDisplay"></span>!</h2>
+<a href="memory-game/memory.html" class="btn">Memory Card Match</a>
+<a href="typing-game/typing.html" class="btn">Typing Speed</a>
+<button id="logoutBtn" class="btn" style="background-color:#f44336;">Logout</button>
+</div>
+
+<script>
+// Toggle login/register
+document.getElementById("showRegister").addEventListener("click", ()=>{
+    document.getElementById("login-section").style.display="none";
+    document.getElementById("register-section").style.display="block";
+});
+document.getElementById("showLogin").addEventListener("click", ()=>{
+    document.getElementById("register-section").style.display="none";
+    document.getElementById("login-section").style.display="block";
+});
+
+// Login
+document.getElementById("loginForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    const data = new FormData(this);
+    fetch("api/login.php",{method:"POST", body:data})
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        if(data.status === "success"){
+            username = data.username;
+            window.userId = data.user_id;
+            document.getElementById("userDisplay").textContent = username;
+            document.getElementById("login-section").style.display = "none";
+            document.getElementById("game-menu").style.display = "block";
+        }
+    });
+});
+
+// Register
+document.getElementById("registerForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    const data = new FormData(this);
+    fetch("api/register.php",{method:"POST", body:data})
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        if(data.status === "success"){
+            username = data.username;
+            window.userId = data.user_id;
+            document.getElementById("userDisplay").textContent = username;
+            document.getElementById("register-section").style.display = "none";
+            document.getElementById("game-menu").style.display = "block";
+        }
+    });
+});
+
+// Logout
+document.getElementById("logoutBtn").addEventListener("click", ()=>{
+    fetch("api/logout.php").then(()=>location.reload());
+});
+</script>
+</body>
+</html>
