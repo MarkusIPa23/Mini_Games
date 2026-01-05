@@ -1,32 +1,39 @@
 <?php
-include 'connect.php';
+include "connect.php";
 
-$user_id = $_POST['user_id'];
-$level = $_POST['level'];
-$wpm = $_POST['wpm'];
-$time_seconds = $_POST['time_seconds'];
-
-// Check if user has a score for this level
-$sql_check = "SELECT * FROM typing_highscores WHERE user_id=$user_id AND level='$level' ORDER BY wpm DESC LIMIT 1";
-$res = $conn->query($sql_check);
-
-if($res->num_rows > 0){
-    $row = $res->fetch_assoc();
-    if($wpm > $row['wpm']){
-        // New best, update
-        $sql_update = "UPDATE typing_highscores SET wpm=$wpm, time_seconds=$time_seconds, created_at=NOW() WHERE id=".$row['id'];
-        $conn->query($sql_update);
-        $message = "New personal best!";
-    } else {
-        $message = "Score saved, but not better than your best";
-    }
-} else {
-    // No previous score
-    $sql_insert = "INSERT INTO typing_highscores (user_id, level, wpm, time_seconds) VALUES ($user_id,'$level',$wpm,$time_seconds)";
-    $conn->query($sql_insert);
-    $message = "Score saved!";
+if (!isset($_SESSION["user_id"])) {
+    echo json_encode(["status" => "error", "message" => "Not logged in"]);
+    exit;
 }
 
-echo json_encode(["status"=>"success","message"=>$message]);
-$conn->close();
-?>
+if (!isset($_POST["level"]) || !isset($_POST["wpm"]) || !isset($_POST["time_seconds"])) {
+    echo json_encode(["status" => "error", "message" => "Missing data"]);
+    exit;
+}
+
+$user_id = $_SESSION["user_id"];
+$level = $_POST["level"];
+$wpm = (float)$_POST["wpm"];
+$time = (int)$_POST["time_seconds"];
+
+$sql = "
+INSERT INTO typing_highscores (user_id, level, wpm, time_seconds)
+VALUES (?, ?, ?, ?)
+ON DUPLICATE KEY UPDATE
+wpm = GREATEST(wpm, VALUES(wpm)),
+time_seconds = CASE WHEN VALUES(wpm) > wpm THEN VALUES(time_seconds) ELSE time_seconds END
+";
+
+$stmt = $conn->prepare($sql);
+if (!$stmt) {
+    echo json_encode(["status" => "error", "message" => "Prepare failed: " . $conn->error]);
+    exit;
+}
+
+$stmt->bind_param("isdi", $user_id, $level, $wpm, $time);
+if (!$stmt->execute()) {
+    echo json_encode(["status" => "error", "message" => "Execute failed: " . $stmt->error]);
+    exit;
+}
+
+echo json_encode(["status" => "success"]);

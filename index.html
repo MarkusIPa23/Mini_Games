@@ -36,6 +36,8 @@
 <h2>Welcome, <span id="userDisplay"></span>!</h2>
 <a href="memory-game/memory.html" class="btn">Memory Card Match</a>
 <a href="typing-game/typing.html" class="btn">Typing Speed</a>
+<a href="memory-game/memory_leaderboard.html" class="btn">Memory Leaderboards</a>
+<a href="typing-game/typing_leaderboard.html" class="btn">Typing Leaderboards</a>
 <button id="logoutBtn" class="btn" style="background-color:#f44336;">Logout</button>
 </div>
 
@@ -61,6 +63,7 @@ document.getElementById("loginForm").addEventListener("submit", function(e){
         if(data.status === "success"){
             username = data.username;
             window.userId = data.user_id;
+            localStorage.setItem('userId', data.user_id);
             document.getElementById("userDisplay").textContent = username;
             document.getElementById("login-section").style.display = "none";
             document.getElementById("game-menu").style.display = "block";
@@ -79,6 +82,7 @@ document.getElementById("registerForm").addEventListener("submit", function(e){
         if(data.status === "success"){
             username = data.username;
             window.userId = data.user_id;
+            localStorage.setItem('userId', data.user_id);
             document.getElementById("userDisplay").textContent = username;
             document.getElementById("register-section").style.display = "none";
             document.getElementById("game-menu").style.display = "block";
@@ -88,6 +92,7 @@ document.getElementById("registerForm").addEventListener("submit", function(e){
 
 // Logout
 document.getElementById("logoutBtn").addEventListener("click", ()=>{
+    localStorage.removeItem('userId');
     fetch("api/logout.php").then(()=>location.reload());
 });
 </script>

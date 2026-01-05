@@ -31,6 +31,7 @@ class TypingGame {
             if (userInput[i] === this.text[i]) correctLength++;
         }
         const percent = Math.floor(correctLength / this.text.length * 100);
+        document.getElementById("progress-bar").style.width = percent + "%";
 
         if (percent === 100) {
             clearInterval(this.timerInterval);
@@ -38,6 +39,7 @@ class TypingGame {
             const wpm = (userInput.split(" ").length)/(elapsed/60);
             saveTypingScore(this.userId, this.level, wpm, Math.floor(elapsed));
             showTypingLeaderboard(this.level);
+            document.getElementById("restart-btn").style.display = "block";
             alert("Finished! WPM: "+wpm.toFixed(1));
         }
     }
@@ -57,6 +59,7 @@ function startTypingGame(level) {
     const userId = window.userId || null; // optional
     const game = new TypingGame(level, userId); // still passes null if not logged in
     game.start();
+    window.currentLevel = level; // Store current level
 }
 
 // API calls
@@ -74,9 +77,31 @@ function showTypingLeaderboard(level) {
     fetch(`../api/get_typing_scores.php?level=${level}`)
     .then(res=>res.json())
     .then(scores=>{
-        let html = '<h3>Leaderboard</h3><ol>';
-        scores.forEach(s => html+=`<li>${s.username}: ${s.wpm.toFixed(1)} WPM</li>`);
-        html+='</ol>';
-        document.getElementById('leaderboard').innerHTML = html;
+        let html = '<h3>Leaderboard</h3><ul>';
+        scores.forEach(s => html+=`<li>${s.username}: ${s.wpm.toFixed(1)} WPM (${new Date(s.created_at).toLocaleString()})</li>`);
+        html+='</ul>';
+        // Fetch user's score
+        fetch('../api/get_user_typing_scores.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                const userScore = data.scores.find(s => s.level === level);
+                if (userScore) {
+                    html += '<h4>Your Best WPM</h4><p>' + userScore.wpm.toFixed(1) + ' WPM (' + userScore.time_seconds + 's) - ' + new Date(userScore.created_at).toLocaleString() + '</p>';
+                } else {
+                    html += '<h4>Your Best WPM</h4><p>No score yet</p>';
+                }
+            }
+            document.getElementById('leaderboard').innerHTML = html;
+        });
     });
 }
+
+// Restart functionality
+window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById("restart-btn").addEventListener("click", () => {
+        startTypingGame(window.currentLevel || 'easy');
+        document.getElementById("restart-btn").style.display = "none";
+        document.getElementById("leaderboard").innerHTML = "";
+    });
+});
