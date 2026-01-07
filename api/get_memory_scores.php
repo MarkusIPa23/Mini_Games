@@ -9,14 +9,7 @@ if (!$level) {
     exit;
 }
 
-$sql = "
-SELECT u.username, m.time_seconds, m.created_at
-FROM memory_highscores m
-JOIN users u ON u.id = m.user_id
-WHERE m.level = ?
-ORDER BY m.time_seconds ASC
-LIMIT 10
-";
+$sql = "SELECT u.username, MIN(m.time_seconds) as time_seconds, MAX(m.created_at) as created_at FROM memory_highscores m JOIN users u ON u.id = m.user_id WHERE m.level = ? GROUP BY m.user_id, u.username ORDER BY time_seconds ASC LIMIT 10";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $level);

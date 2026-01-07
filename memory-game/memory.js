@@ -30,33 +30,40 @@ class MemoryGame {
 
     generateCards() {
         const symbols = ["🍎","🍌","🍇","🍒","🍋","🍉","🥝","🍍","🥥","🍑"];
-        const pairCount = this.level === "easy" ? 2 :
-                          this.level === "medium" ? 6 : 10;
-
+        const pairCount = this.level === "easy" ? 2 : this.level === "medium" ? 6 : 10;
         const selected = symbols.slice(0, pairCount);
         this.cards = selected.concat(selected).map((s,i)=>new Card(i,s));
         this.setGrid();
     }
 
     setGrid() {
-        const pairCount = this.level === "easy" ? 2 :
-                          this.level === "medium" ? 6 : 10;
-        const totalCards = pairCount * 2;
-
-        this.boardElement.style.gridTemplateColumns = `repeat(${totalCards}, 80px)`;
-        this.boardElement.style.gridTemplateRows = `80px`;
+        if (this.level === "easy") {
+            this.boardElement.style.gridTemplateColumns = `repeat(2, 80px)`;
+            this.boardElement.style.gridTemplateRows = `repeat(2, 80px)`;
+        } else if (this.level === "medium") {
+            this.boardElement.style.gridTemplateColumns = `repeat(4, 80px)`;
+            this.boardElement.style.gridTemplateRows = `repeat(3, 80px)`;
+        } else {
+            this.boardElement.style.gridTemplateColumns = `repeat(5, 80px)`;
+            this.boardElement.style.gridTemplateRows = `repeat(4, 80px)`;
+        }
     }
 
-    shuffleCards() {
-        this.cards.sort(() => Math.random() - 0.5);
-    }
+    shuffleCards() { this.cards.sort(() => Math.random() - 0.5); }
 
     renderBoard() {
         this.boardElement.innerHTML = "";
         this.cards.forEach(card => {
             const div = document.createElement("div");
             div.className = "card";
-            div.textContent = "?";
+            const front = document.createElement("div");
+            front.className = "front";
+            front.textContent = "?";
+            const back = document.createElement("div");
+            back.className = "back";
+            back.textContent = card.symbol;
+            div.appendChild(front);
+            div.appendChild(back);
             div.onclick = () => this.cardClick(card, div);
             this.boardElement.appendChild(div);
         });
@@ -64,11 +71,8 @@ class MemoryGame {
 
     cardClick(card, div) {
         if (card.flipped || this.secondCard) return;
-
         card.flip();
         div.classList.add('flipped');
-        div.textContent = card.symbol;
-
         if (!this.firstCard) {
             this.firstCard = { card, div };
         } else {
@@ -86,21 +90,16 @@ class MemoryGame {
             setTimeout(() => {
                 this.firstCard.div.classList.remove('flipped');
                 this.secondCard.div.classList.remove('flipped');
-                this.firstCard.div.textContent = "?";
-                this.secondCard.div.textContent = "?";
             }, 500);
         }
-
         this.firstCard = null;
         this.secondCard = null;
-
         if (this.matchedPairs === this.cards.length / 2) {
             clearInterval(this.timerInterval);
             const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
             this.saveScore(elapsed);
             alert(`You won! Time: ${elapsed}s`);
-            showMemoryLeaderboard(this.level);
-        }
+            showMemoryLeaderboard(this.level);            document.getElementById("restart-btn").style.display = "block";        }
     }
 
     startTimer() {
@@ -111,48 +110,89 @@ class MemoryGame {
     }
 
     saveScore(time) {
+        const userId = window.userId;
+        if (!userId) {
+            console.log("Not logged in, score not saved");
+            return;
+        }
+        console.log("Saving score:", { user_id: userId, level: this.level, time_seconds: time });
         fetch("../api/save_memory_score.php", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                level: this.level,
-                time_seconds: time
-            })
+            headers: {'Content-Type':'application/x-www-form-urlencoded'},
+            body: `user_id=${userId}&level=${this.level}&time_seconds=${time}`
         })
-        .then(r => r.json())
-        .then(d => console.log("Score saved:", d));
+        .then(r => {
+            console.log("Save response status:", r.status);
+            return r.json();
+        })
+        .then(d => console.log("Score saved:", d))
+        .catch(err => console.error("Save error:", err));
     }
 }
 
-// ---- GAME START ----
-function startGame(level) {
-    const game = new MemoryGame(level);
-    game.start();
+function startGame(level) { 
+    const game = new MemoryGame(level); 
+    game.start(); 
+    window.currentLevel = level;
 }
 
-// ---- LEADERBOARD ----
 function showMemoryLeaderboard(level) {
-    fetch(`../api/get_memory_scores.php?level=${level}`)
-        .then(res => res.json())
-        .then(scores => {
-            let html = "<h3>Leaderboard</h3><ul>";
-            scores.forEach((s, index) => {
-                html += `<li>${s.username}: ${s.time_seconds}s (${new Date(s.created_at).toLocaleString()})</li>`;
-            });
-            html += "</ul>";
-            // Now fetch user's score
-            fetch("../api/get_user_memory_scores.php")
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === "success") {
-                        const userScore = data.scores.find(s => s.level === level);
-                        if (userScore) {
-                            html += "<h4>Your Best Time</h4><p>" + userScore.time_seconds + "s - " + new Date(userScore.created_at).toLocaleString() + "</p>";
-                        } else {
-                            html += "<h4>Your Best Time</h4><p>No score yet</p>";
-                        }
-                    }
-                    document.getElementById("leaderboard").innerHTML = html;
-                });
+    const levels = ['easy', 'medium', 'hard'];
+    let html = '<h3>Leaderboard</h3>';
+    const promises = levels.map(lvl => fetch(`../api/get_memory_scores.php?level=${lvl}`).then(res => res.json()).then(scores => ({ level: lvl, scores })));
+
+    Promise.all(promises).then(results => {
+        results.forEach(({ level, scores }) => {
+            html += `<h4>${level.charAt(0).toUpperCase() + level.slice(1)}</h4>`;
+            if (scores.length === 0) {
+                html += '<p>No scores yet.</p>';
+            } else {
+                html += '<ol>';
+                scores.forEach((s, index) => html += `<li>${s.username}: ${formatTime(s.time_seconds)}</li>`);
+                html += '</ol>';
+            }
         });
+        // Add user's best if logged in
+        if (window.userId) {
+            fetch('../api/get_user_memory_scores.php?user_id=' + window.userId)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success" && data.scores.length > 0) {
+                    const username = data.scores[0].username;
+                    html += `<h4>${username}'s Best Times</h4>`;
+                    levels.forEach(lvl => {
+                        const scores = data.scores.filter(s => s.level === lvl);
+                        if (scores.length > 0) {
+                            const best = scores.reduce((min, s) => s.time_seconds < min.time_seconds ? s : min);
+                            html += `<p><strong>${lvl.charAt(0).toUpperCase() + lvl.slice(1)}</strong>: ${formatTime(best.time_seconds)}</p>`;
+                        } else {
+                            html += `<p><strong>${lvl.charAt(0).toUpperCase() + lvl.slice(1)}</strong>: No score yet</p>`;
+                        }
+                    });
+                }
+                document.getElementById('leaderboard').innerHTML = html;
+            })
+            .catch(() => {
+                document.getElementById('leaderboard').innerHTML = html;
+            });
+        } else {
+            document.getElementById('leaderboard').innerHTML = html;
+        }
+    }).catch(() => {
+        document.getElementById('leaderboard').innerHTML = '<h3>Leaderboard</h3><p>Error loading leaderboard</p>';
+    });
 }
+
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById("restart-btn").addEventListener("click", () => {
+        startGame(window.currentLevel || 'easy');
+        document.getElementById("restart-btn").style.display = "none";
+        document.getElementById("leaderboard").innerHTML = "";
+    });
+});

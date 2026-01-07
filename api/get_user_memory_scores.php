@@ -1,12 +1,13 @@
 <?php
 include "connect.php";
 
-if (!isset($_SESSION["user_id"])) {
-    echo json_encode(["status" => "error", "message" => "Not logged in"]);
+$user_id = $_GET["user_id"] ?? null;
+if (!$user_id) {
+    echo json_encode(["status" => "error", "message" => "No user_id"]);
     exit;
 }
 
-$user_id = $_SESSION["user_id"];
+$user_id = (int)$user_id;
 
 $sql = "SELECT level, time_seconds, created_at FROM memory_highscores WHERE user_id = ? ORDER BY FIELD(level, 'easy', 'medium', 'hard')";
 $stmt = $conn->prepare($sql);

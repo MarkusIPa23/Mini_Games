@@ -9,16 +9,17 @@
 <body>
     <h1>Memory Card Match</h1>
     <button class="back-btn" onclick="window.location.href='../index.html'">Back to Menu</button>
-<div id="level-select">
-    <button onclick="startGame('easy')">Easy 2x2</button>
-    <button onclick="startGame('medium')">Medium 3x4</button>
-    <button onclick="startGame('hard')">Hard 4x5</button>
-</div>
+    <div id="level-select">
+        <button onclick="startGame('easy')">Easy 2x2</button>
+        <button onclick="startGame('medium')">Medium 3x4</button>
+        <button onclick="startGame('hard')">Hard 4x5</button>
+    </div>
 
-<div id="game-board"></div>
-<div id="timer">Time: 0s</div>
-<div id="leaderboard"></div>
-<script>window.userId = localStorage.getItem('userId');</script>
-<script src="memory.js"></script>
+    <div id="game-board" class="board"></div>
+    <div id="timer">Time: 0s</div>
+    <button id="restart-btn" style="display:none;">Restart</button>
+    <div id="leaderboard"></div>
+    <script>window.userId = localStorage.getItem('userId');</script>
+    <script src="memory.js"></script>
 </body>
 </html>

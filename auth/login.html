@@ -28,6 +28,8 @@
         .then(data => {
             alert(data.message);
             if(data.status === "success") {
+                localStorage.setItem('userId', data.user_id);
+                localStorage.setItem('username', data.username);
                 window.location.href = "../index.html";
             }
         });

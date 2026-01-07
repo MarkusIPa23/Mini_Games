@@ -9,14 +9,7 @@ if (!$level) {
     exit;
 }
 
-$sql = "
-SELECT u.username, t.wpm, t.time_seconds, t.created_at
-FROM typing_highscores t
-JOIN users u ON u.id = t.user_id
-WHERE t.level = ?
-ORDER BY t.wpm DESC
-LIMIT 10
-";
+$sql = "SELECT u.username, MIN(t.time_seconds) as time_seconds, MAX(t.created_at) as created_at FROM typing_highscores t JOIN users u ON u.id = t.user_id WHERE t.level = ? GROUP BY t.user_id, u.username ORDER BY time_seconds ASC LIMIT 10";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $level);
