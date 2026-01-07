@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# 1. Ja klients pieprasa failu, kas tiešām eksistē (piem. /js/memory.js), ielādē to
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# 2. Ja klients pieprasa mapi, kas tiešām eksistē, ielādē to
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# 3. Tikai ja nekas no augstāk minētā neeksistē, sūti pieprasījumu uz index.php
+RewriteRule ^ index.php [L]

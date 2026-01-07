@@ -1,14 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memory Card Match</title>
-    <link rel="stylesheet" href="memory.css">
-</head>
-<body>
+<?php require "views/components/header.php" ?>
+<?php require "views/components/navbar.php" ?>
+
+
     <h1>Memory Card Match</h1>
-    <button class="back-btn" onclick="window.location.href='../index.html'">Back to Menu</button>
     <div id="level-select">
         <button onclick="startGame('easy')">Easy 2x2</button>
         <button onclick="startGame('medium')">Medium 3x4</button>
@@ -20,6 +14,8 @@
     <button id="restart-btn" style="display:none;">Restart</button>
     <div id="leaderboard"></div>
     <script>window.userId = localStorage.getItem('userId');</script>
-    <script src="memory.js"></script>
-</body>
-</html>
+    <script src="../js/memory.js"></script>
+
+    
+
+<?php require "views/components/footer.php" ?>

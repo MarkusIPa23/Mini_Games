@@ -1,14 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Typing Speed</title>
-    <link rel="stylesheet" href="typing.css">
-</head>
-<body>
+<?php require "views/components/header.php" ?>
+<?php require "views/components/navbar.php" ?>
+
+
     <h1>Typing Speed</h1>
-    <button class="back-btn" onclick="window.location.href='../index.html'">Back to Menu</button>
     <div id="level-select">
         <button onclick="startTypingGame('easy')">Easy</button>
         <button onclick="startTypingGame('medium')">Medium</button>
