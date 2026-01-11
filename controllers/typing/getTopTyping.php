@@ -11,11 +11,15 @@ $topScores = [];
 
 foreach ($levels as $lvl) {
     $topScores[$lvl] = $db->query("
-        SELECT users.username, typing_highscores.wpm 
-        FROM typing_highscores 
-        JOIN users ON typing_highscores.user_id = users.id 
-        WHERE level = :l 
-        ORDER BY wpm DESC LIMIT 3", ['l' => $lvl])->fetchAll();
+        SELECT 
+    users.username, 
+    typing_highscores.wpm,
+    typing_highscores.language
+FROM typing_highscores 
+JOIN users ON typing_highscores.user_id = users.id 
+WHERE level = :l 
+ORDER BY wpm DESC 
+LIMIT 3");
 }
 
 echo json_encode($topScores);

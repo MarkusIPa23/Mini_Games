@@ -206,6 +206,11 @@ p a:hover { text-decoration: underline; }
 @media screen and (max-width: 768px) {
     .pyramid-grid {
         grid-template-columns: 1fr;
+        
+    }
+    .logout-btn {
+        padding: 8px 18px;
+        font-size: 16px;
     }
 
     .top-card {
@@ -219,12 +224,13 @@ p a:hover { text-decoration: underline; }
         margin: 0 auto;  /* Nocentrē kartīti */
     }
 
-    .user-bar {
-        padding: 10px 20px;
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
+   .user-bar {
+    padding: 10px 16px;
+    flex-direction: row;          /* ← paliek horizontāli */
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+}
 
     nav ul {
         flex-direction: column;

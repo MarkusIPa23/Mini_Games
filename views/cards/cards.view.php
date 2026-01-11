@@ -11,27 +11,34 @@
     </div>
 
     <div id="timer">Laiks: 0s</div>
+
     <div id="game-board"></div>
-    <button id="restart-btn" class="btn" style="display:none; background-color: #27ae60;" onclick="location.reload()">Spēlēt vēlreiz</button>
+
+    <button id="restart-btn" class="btn" style="display:none; background-color:#27ae60;" onclick="location.reload()">
+        Spēlēt vēlreiz
+    </button>
 
     <div class="top-scores-container">
         <h2>Top 3</h2>
         <div class="scores-grid">
-    <?php foreach ($topScores as $lvl => $scores): ?>
-        <div class="score-card" data-level="<?= $lvl ?>">
-            <h3><?= ucfirst($lvl) ?></h3>
-            <ol>
-                <?php if (empty($scores)): ?>
-                    <li>Vēl nav rezultātu</li>
-                <?php else: ?>
-                    <?php foreach ($scores as $s): ?>
-                        <li><strong><?= htmlspecialchars($s['username']) ?></strong>: <?= $s['time_seconds'] ?>s</li>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </ol>
+            <?php foreach ($topScores as $lvl => $scores): ?>
+                <div class="score-card" data-level="<?= $lvl ?>">
+                    <h3><?= ucfirst($lvl) ?></h3>
+                    <ol>
+                        <?php if (empty($scores)): ?>
+                            <li>Vēl nav rezultātu</li>
+                        <?php else: ?>
+                            <?php foreach ($scores as $s): ?>
+                                <li>
+                                    <strong><?= htmlspecialchars($s['username']) ?></strong>:
+                                    <?= $s['time_seconds'] ?>s
+                                </li>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </ol>
+                </div>
+            <?php endforeach; ?>
         </div>
-    <?php endforeach; ?>
-</div>
     </div>
 </main>
 
